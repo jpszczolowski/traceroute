@@ -19,21 +19,26 @@ int main(int argc, char **argv) {
 
 	int sockfd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
 	if (sockfd < 0) {
-		handle_error("socket error");
+		handle_error("socket");
 	}
 
 	u_int16_t pid = getpid(); // pid modulo 2^16
 
-	int nqueries = 1;
-	for (int ttl = 1; ttl <= 5; ttl++) {
-		struct timeval start_time;
+	int nqueries = 3;
+	for (int ttl = 1; ttl <= 30; ttl++) {
+		struct timeval start_time, end_time;
 		gettimeofday(&start_time, NULL);
+		end_time = start_time;
+		end_time.tv_sec++;
 
 		for (int i = 0; i < nqueries; i++) {
 			send_single_icmp(sockfd, argv[1], pid, ttl, ttl);
 		}
 
-		wait_one_sec_for_icmps(sockfd, pid, ttl, &start_time);
+		int host_reached = wait_for_icmps(sockfd, pid, ttl, &start_time, &end_time, nqueries);
+		if (host_reached) {
+			break;
+		}
 	}
 
 	return EXIT_SUCCESS;
