@@ -58,16 +58,15 @@ static int time_passed(int packets_received, struct timeval *current_time,
 }
 
 /*
-    returns 1 when host is reached
-        and 0 otherwise
-*/
+ * returns 1 when host is reached
+ *     and 0 otherwise
+ */
 int wait_for_icmps(int sockfd, uint16_t pid, uint8_t ttl, struct timeval *start_time,
-                    struct timeval *end_time, int nqueries) {
+                   struct timeval *end_time, int nqueries) {
     int packets_received = 0;
     int host_reached = 0;
 
     struct timeval deltas[nqueries];
-    char ips[nqueries][20];
     struct timeval current_time;
 
     printf("%d. ", ttl);
@@ -118,17 +117,7 @@ int wait_for_icmps(int sockfd, uint16_t pid, uint8_t ttl, struct timeval *start_
         if (proper_type && icmp_ptr->un.echo.id == pid && icmp_ptr->un.echo.sequence == ttl) {
             timersub(&current_time, start_time, &deltas[packets_received]);
 
-            int new_ip = 1;
-            for (int i = 0; i < nqueries; i++) {
-                if (memcmp(ips[i], sender_ip_str, 20) == 0) {
-                    new_ip = 0;
-                }
-            }
-
-            if (new_ip) {
-                printf("%s ", sender_ip_str);
-                memcpy(ips[packets_received], sender_ip_str, 20);
-            }
+            printf("%s ", sender_ip_str);
 
             packets_received++;
             if (icmp_type == ICMP_ECHOREPLY) {
@@ -137,25 +126,16 @@ int wait_for_icmps(int sockfd, uint16_t pid, uint8_t ttl, struct timeval *start_
         }
     }
 
+    printf(" ");
     if (packets_received == 0) {
         printf("*");
-    } else if (packets_received < nqueries) {
-        printf("???");
     } else {
-        double average_time = 0;
         for (int i = 0; i < packets_received; i++) {
-            average_time += deltas[i].tv_usec/1000.0;
+            printf("%.1f ms  ", deltas[i].tv_usec/1000.0);
         }
-        average_time /= nqueries;
-
-        printf("%.1f ms", average_time);
     }
 
     printf("\n");
-    // for (int i = 0; i < packets_received; i++) {
-    // 	printf("%.1fms ", deltas[i].tv_usec/1000.0);
-    // }
-    // printf("\n");
 
     return host_reached;
 }
