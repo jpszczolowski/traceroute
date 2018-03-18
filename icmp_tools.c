@@ -126,12 +126,11 @@ int wait_for_icmps(int sockfd, uint16_t pid, uint8_t ttl, struct timeval *start_
         }
     }
 
-    printf(" ");
     if (packets_received == 0) {
         printf("*");
     } else {
         for (int i = 0; i < packets_received; i++) {
-            printf("%.1f ms  ", deltas[i].tv_usec/1000.0);
+            printf(" %.1f ms ", deltas[i].tv_usec/1000.0);
         }
     }
 
