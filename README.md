@@ -14,7 +14,7 @@ $ make
 
 then get some IP:
 ```
-$ host google.com
+$ host -t a google.com
 google.com has address 216.58.209.78
 ```
 and finally:
